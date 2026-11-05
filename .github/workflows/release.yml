@@ -2,6 +2,7 @@
 # Trigger: push a tag that matches package.json's version, e.g.
 #   npm version patch   (bumps version + creates tag v0.0.2)
 #   git push --follow-tags
+# or bump the version, push, and start it by hand (Actions > Run workflow).
 # Installed copies of BranchFlow check these releases and auto-update.
 name: Release desktop app
 
@@ -31,7 +32,29 @@ jobs:
 
       - run: node scripts/prepare-electron.mjs
 
-      - name: Build installer and publish release
-        run: npx electron-builder --win --publish always
+      # Build only; publishing is done below with the GitHub CLI so the
+      # release and all its files are created in one predictable step.
+      - name: Build installer
+        run: npx electron-builder --win --publish never
+
+      # Uploads the installer, its blockmap and latest.yml (which installed
+      # apps read to find updates). Creates the tag and release if missing;
+      # if the release already exists, replaces its files.
+      - name: Publish GitHub release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v$VERSION"
+          FILES=(dist-electron/BranchFlow-Setup-$VERSION.exe dist-electron/BranchFlow-Setup-$VERSION.exe.blockmap dist-electron/latest.yml)
+          ls -l "${FILES[@]}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG exists, uploading files"
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+          else
+            gh release create "$TAG" "${FILES[@]}" \
+              --title "BranchFlow $VERSION" \
+              --target "$GITHUB_SHA" \
+              --generate-notes
+          fi
