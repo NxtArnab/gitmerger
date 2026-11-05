@@ -16,7 +16,11 @@
 /out/
 
 # production
-/build
+/build/*
+!/build/icon.ico
+!/build/installer*.bmp
+!/build/uninstaller*.bmp
+!/build/installer.nsh
 
 # misc
 .DS_Store

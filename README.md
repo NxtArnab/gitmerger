@@ -71,3 +71,36 @@ Data location can be changed with the `MERGER_DATA_DIR` environment variable.
 - Merges use `git merge --no-ff`. Rebasing strategies are not supported.
 - Long-running runs survive page reloads, but not a server restart mid-merge:
   the run is marked failed and can be discarded and re-run.
+
+## Windows desktop app
+
+BranchFlow also ships as a Windows app (Electron). It starts the same server
+in the background on a private local port and opens it in its own window.
+Git runs as the signed-in Windows user, so it uses that machine's existing
+Git Credential Manager logins, SSH keys and global `user.name`/`user.email`.
+Git 2.38+ must be installed; the app checks on startup.
+
+Data is stored in `%APPDATA%\BranchFlow\data` (server log: `%APPDATA%\BranchFlow\server.log`).
+
+```bash
+npm run electron:dev     # dev: next dev + Electron window
+npm run electron:build   # builds dist-electron/BranchFlow-Setup-<version>.exe
+npm run electron:art     # regenerate installer artwork in build/
+```
+
+### Releasing an update
+
+Installed apps check GitHub Releases on
+[NxtArnab/gitmerger](https://github.com/NxtArnab/gitmerger/releases) at startup
+and every 4 hours, download new versions in the background and offer to
+restart.
+
+```bash
+npm version patch        # bumps package.json and creates tag vX.Y.Z
+git push --follow-tags   # GitHub Actions builds and publishes the release
+```
+
+The workflow is `.github/workflows/release.yml`. The repository must stay
+public for installed apps to see releases (a private repo would need a token
+inside the app). Builds are unsigned, so Windows SmartScreen shows "Unknown
+publisher" until a code-signing certificate is added.

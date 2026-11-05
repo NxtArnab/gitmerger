@@ -10,7 +10,7 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "electron:dev": "concurrently -k -n next,app \"next dev\" \"wait-on http://localhost:3000 && cross-env ELECTRON_DEV_URL=http://localhost:3000 electron .\"",
+    "electron:dev": "concurrently -k -n next,app \"next dev\" \"wait-on http://localhost:3000 && cross-env ELECTRON_RUN_AS_NODE= ELECTRON_DEV_URL=http://localhost:3000 electron .\"",
     "electron:build": "next build && node scripts/prepare-electron.mjs && electron-builder --win --publish never",
     "electron:art": "node scripts/make-installer-art.mjs"
   },
