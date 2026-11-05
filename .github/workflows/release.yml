@@ -1,0 +1,37 @@
+# Builds the Windows installer and publishes it as a GitHub Release.
+# Trigger: push a tag that matches package.json's version, e.g.
+#   npm version patch   (bumps version + creates tag v0.0.2)
+#   git push --follow-tags
+# Installed copies of BranchFlow check these releases and auto-update.
+name: Release desktop app
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build Next.js standalone server
+        run: npx next build
+
+      - run: node scripts/prepare-electron.mjs
+
+      - name: Build installer and publish release
+        run: npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
