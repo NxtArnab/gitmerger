@@ -37,3 +37,9 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# BranchFlow workspaces and data
+.merger-data
+
+# Electron build output
+dist-electron
