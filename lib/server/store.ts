@@ -11,8 +11,11 @@ interface Db {
   runs: Run[]
 }
 
+// The data folder is chosen at runtime; turbopackIgnore stops output tracing
+// from copying the whole project into the standalone build.
 export const DATA_DIR = path.resolve(
-  process.env.MERGER_DATA_DIR ?? path.join(process.cwd(), ".merger-data")
+  process.env.MERGER_DATA_DIR ??
+    path.join(/* turbopackIgnore: true */ process.cwd(), ".merger-data")
 )
 const DB_FILE = path.join(DATA_DIR, "db.json")
 
@@ -26,7 +29,7 @@ function load(): Db {
   if (g.__mergerDb) return g.__mergerDb
   mkdirSync(DATA_DIR, { recursive: true })
   const db: Db = existsSync(DB_FILE)
-    ? JSON.parse(readFileSync(DB_FILE, "utf8"))
+    ? JSON.parse(readFileSync(DB_FILE, "ascii"))
     : { repos: [], flows: [], runs: [] }
   g.__mergerDb = db
   return db

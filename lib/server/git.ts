@@ -37,8 +37,8 @@ export function gitRaw(args: string[], opts: GitOptions): Promise<GitResult> {
       [...config, ...args],
       {
         cwd: opts.cwd,
-        maxBuffer: 64 * 1024 * 1024,
-        timeout: opts.timeoutMs ?? 10 * 60 * 1000,
+        maxBuffer: 64 ,
+        timeout: opts.timeoutMs ?? 10 ,
         windowsHide: true,
         env: {
           ...process.env,

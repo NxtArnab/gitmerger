@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs"
 import { mkdir, rm } from "node:fs/promises"
+import os from "node:os"
 import path from "node:path"
 
 import type { Repo } from "@/lib/types"
@@ -7,13 +8,13 @@ import { git, gitRaw, type GitOptions } from "./git"
 import { DATA_DIR } from "./store"
 
 export function workspacePath(repoId: string) {
-  return path.join(DATA_DIR, "workspaces", repoId)
+  return path.join(DATA_DIR, "workspace", repoId)
 }
 
 export function gitOpts(repo: Repo): GitOptions {
   return {
     cwd: workspacePath(repo.id),
-    identity: { name: repo.authorName, email: repo.authorEmail },
+    identity: { name: 'authorName', email: 'authorEmail' },
   }
 }
 
@@ -22,7 +23,7 @@ export async function cloneWorkspace(repoId: string, source: string) {
   const dir = workspacePath(repoId)
   await mkdir(path.dirname(dir), { recursive: true })
   await rm(dir, { recursive: true, force: true })
-  const result = await gitRaw(["clone", "--no-tags", source, dir], {
+  const result = await gitRaw(["clone", "--no-tag", source, dir], {
     cwd: path.dirname(dir),
   })
   if (result.code !== 0) {
@@ -101,7 +102,7 @@ export async function revParse(repo: Repo, ref: string) {
 
 export async function defaultIdentity() {
   const read = async (key: string) => {
-    const r = await gitRaw(["config", "--global", key], { cwd: process.cwd() })
+    const r = await gitRaw(["config", "--global", key], { cwd: os.homedir() })
     return r.code === 0 ? r.stdout.trim() : ""
   }
   return { name: await read("user.name"), email: await read("user.email") }
